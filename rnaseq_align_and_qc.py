@@ -49,11 +49,11 @@ def get_genome_ref_files(genome):
 	Current choices are: "hg19", "Zv9", "mm10"
 	"""
 	if genome == "hg19":
-		ref_index = "/data/pcpgm/rnaseq/Indexes/hg19/hg19_ERCC"
-		fa = "/pub/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
-		gtf = "/pub/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
-		ref = "/data/pcpgm/rnaseq/Indexes/hg19/refFlat.txt"
-		ERCC_gtf = "/data/pcpgm/rnaseq/Indexes/hg19/hg19_ERCC_tuxedo.gtf"
+		ref_index = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC"
+		fa = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
+		gtf = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
+		ref = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/refFlat.txt"
+		ERCC_gtf = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC_tuxedo.gtf"
 	elif genome == "Zv9":
 		ref_index = "/data/pcpgm/rnaseq/Indexes/Zv9/Zv9_ERCC"
 		fa = "/pub/genome_references/Zv9/Danio_rerio.Zv9.69.dna.toplevel.fa"

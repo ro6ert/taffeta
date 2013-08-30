@@ -1,0 +1,2 @@
+Sample	Gigpad_ID	Lane	Index	ERCC_Mix	File_directory	Batch	Label	Reference_genome	Library_Type
+S-001140205	S-001140205	1	GTGAAA	1	/proj/regeps/regep00/studies/PGRN/analyses/rerpc/Baylor_Data_RNAseq_2013/raw/	baylorbadData	Baseline	hg19	PE
