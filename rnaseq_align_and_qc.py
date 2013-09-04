@@ -3,6 +3,9 @@ import subprocess
 import os
 import argparse
 
+system = "capecod"
+#system = "channingpartners"
+#system = "pcpgmpartners"
 
 def get_sample_info(fin):
 	"""
@@ -48,13 +51,34 @@ def get_genome_ref_files(genome):
 	The ERCC gtf files were appended separately to each species own gtf file
 	Current choices are: "hg19", "Zv9", "mm10"
 	"""
+
 	if genome == "hg19":
-		ref_index = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC"
-		fa = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
-		gtf = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
-		ref = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/refFlat.txt"
-		ERCC_gtf = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC_tuxedo.gtf"
-	elif genome == "Zv9":
+		if system == "capecod":
+			ref_index = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC"
+			fa = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
+			gtf = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
+			ref = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/refFlat.txt"
+			ERCC_gtf = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC_tuxedo.gtf"
+		elif system =="channingpartners":
+			ref_index = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC"
+			fa = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
+			gtf = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
+			ref = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/refFlat.txt"
+			ERCC_gtf = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC_tuxedo.gtf"
+		elif system =="pcpgmpartners":
+			ref_index = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC"
+			fa = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
+			gtf = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
+			ref = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/refFlat.txt"
+			ERCC_gtf = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC_tuxedo.gtf"
+		if system=="capecod":
+			erccpath = "/proj/sadevs/sadev01/tool-data/Ambion_Documents/ercc/ERCC92.gtf"
+	       	elif system=="channingpartners":
+			erccpath = "/data/pcpgm/rnaseq/ERCC/Ambion_Documents/ERCC92.gtf"
+	       	elif system=="pcpgmpartners":
+			erccpath = "/data/pcpgm/rnaseq/ERCC/Ambion_Documents/ERCC92.gtf"
+
+       	elif genome == "Zv9":
 		ref_index = "/data/pcpgm/rnaseq/Indexes/Zv9/Zv9_ERCC"
 		fa = "/pub/genome_references/Zv9/Danio_rerio.Zv9.69.dna.toplevel.fa"
 		gtf = "/pub/genome_references/Zv9/Danio_rerio.Zv9.69.gtf"
@@ -68,7 +92,7 @@ def get_genome_ref_files(genome):
 		ERCC_gtf = "/data/pcpgm/rnaseq/Indexes/mm10/mm10_ERCC.gtf"
 	else:
 		print 'Unknown genome selected: ', genome
-	return(ref_index, fa, gtf, ref, ERCC_gtf)
+	return(ref_index, fa, gtf, ref, ERCC_gtf, erccpath)
 
 	
 #Index sequencing primers
@@ -182,7 +206,7 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 		curr_sample, gigpad, lane, index, ercc_mix, top_dir, batch, label, ref_genome, library_type = k
 		
 		#Get genome reference files
-		ref_index, fa, gtf, ref, ERCC_gtf = get_genome_ref_files(ref_genome)
+		ref_index, fa, gtf, ref, ERCC_gtf, erccpath = get_genome_ref_files(ref_genome)
 		
 		batch_dir = path_start+batch+"/"
 		if not os.path.exists(batch_dir):
@@ -195,20 +219,53 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 		job_name = curr_sample
 				
 		#This directory structure and naming convention is (obviously!) unique to PCPGM
-		R1 = top_dir+"Unaligned-"+lane+"/Project_pcpgm/Sample_"+gigpad+"/filtered/"+gigpad+"_"+index+"_L00"+lane+"_R1.fastq"
-		R2 = top_dir+"Unaligned-"+lane+"/Project_pcpgm/Sample_"+gigpad+"/filtered/"+gigpad+"_"+index+"_L00"+lane+"_R2.fastq"
-		local_R1 = out_dir+curr_sample+"_R1.fastq"
-		local_R2 = out_dir+curr_sample+"_R2.fastq"
+		if system == "capecod":
+			R1 = top_dir+"S-001140205_1_sequenceTEST.fastq"
+			R2 = top_dir+"S-001140205_2_sequenceTEST.fastq"
+			local_R1 = out_dir+curr_sample+"_R1.fastq"
+			local_R2 = out_dir+curr_sample+"_R2.fastq"
+		elif system == "channingpartners":
+			R1 = top_dir+"S-001140205_1_sequenceTEST.fastq"
+			R2 = top_dir+"S-001140205_2_sequenceTEST.fastq"
+			local_R1 = out_dir+curr_sample+"_R1.fastq"
+			local_R2 = out_dir+curr_sample+"_R2.fastq"
+		elif system == "pcpgmpartners":
+			R1 = top_dir+"Unaligned-"+lane+"/Project_pcpgm/Sample_"+gigpad+"/filtered/"+gigpad+"_"+index+"_L00"+lane+"_R1.fastq"
+			R2 = top_dir+"Unaligned-"+lane+"/Project_pcpgm/Sample_"+gigpad+"/filtered/"+gigpad+"_"+index+"_L00"+lane+"_R2.fastq"
+			local_R1 = out_dir+curr_sample+"_R1.fastq"
+			local_R2 = out_dir+curr_sample+"_R2.fastq"
 		
-		#Make lsf file		
-		outp = open(job_name+".lsf", "w")
-		outp.write("#!/bin/bash \n")
-		outp.write("#BSUB -L /bin/bash\n")
-		outp.write("#BSUB -J "+job_name+"\n")
-		outp.write("#BSUB -q big-multi \n")
-		outp.write("#BSUB -o "+job_name+"_%J.out\n")
-		outp.write("#BSUB -e "+job_name+"_%J.screen\n")
-		outp.write("#BSUB -R 'rusage[mem=24000]'\n")
+		if system =="capecod":
+		        #Make lsf file		
+			outp = open(job_name+".sh", "w")
+			outp.write("#!/bin/bash \n")
+			outp.write("#$ -N "+job_name+"\n")
+			outp.write("#$ -cwd\n") 
+			outp.write("#$ -l vritual_free=24G\n")
+			outp.write("#$ -o log.tim.txt\n")
+			outp.write("#$ -e err.tim.txt\n")
+			outp.write("#$ -S /bin/sh\n")
+			outp.write("#$ -q linux01.q\n")
+	       	elif system=="channingpartners":
+		        #Make lsf file		
+			outp = open(job_name+".lsf", "w")
+			outp.write("#!/bin/bash \n")
+			outp.write("#BSUB -L /bin/bash\n")
+			outp.write("#BSUB -J "+job_name+"\n")
+			outp.write("#BSUB -q big-multi \n")
+			outp.write("#BSUB -o "+job_name+"_%J.out\n")
+			outp.write("#BSUB -e "+job_name+"_%J.screen\n")
+			outp.write("#BSUB -R 'rusage[mem=24000]'\n")
+	       	elif system=="pcpgmpartners":
+		        #Make lsf file		
+			outp = open(job_name+".lsf", "w")
+			outp.write("#!/bin/bash \n")
+			outp.write("#BSUB -L /bin/bash\n")
+			outp.write("#BSUB -J "+job_name+"\n")
+			outp.write("#BSUB -q big-multi \n")
+			outp.write("#BSUB -o "+job_name+"_%J.out\n")
+			outp.write("#BSUB -e "+job_name+"_%J.screen\n")
+			outp.write("#BSUB -R 'rusage[mem=24000]'\n")
 		
 		#Check whether unaligned fastq files that were processed by Casava are zipped and make local unzipped copies
 		if not os.path.isfile(local_R1):
@@ -228,6 +285,10 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 		
 		outp.write("cd "+out_dir+"\n")
 		
+		if system =="capecod":
+			trimmomaticDir = "/proj/sadevs/sadev01/tools/Trimmomatic-0.30/trimmomatic.jar"
+		else:
+			trimmomaticDir = ""
 		#Perform adapter trimming with trimmomatic
 		#May perform a standard trimming of bases from reads by amount given above if standard_trim variable is greater than 0. Most will use standard_trim=0 
 		#Create fa file of adapters specific to file
@@ -240,95 +301,128 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 			R2_trim = out_dir+curr_sample+"_R2_Trimmed.fastq"		
 			if library_type in ["PE", "SPE"]:
 				make_adapter_fa(index, illumina_indexes, out_dir+curr_sample+"_adapter.fa", library_type)
-				outp.write("java -Xmx1024m  org.usadellab.trimmomatic.TrimmomaticPE -phred33 "+local_R1+" "+local_R2+" "+R1_trim+" R1_Trimmed_Unpaired.fastq "+R2_trim+" R2_Trimmed_Unpaired.fastq ILLUMINACLIP:"+out_dir+curr_sample+"_adapter.fa:2:30:10 MINLEN:50\n")
+				outp.write("java -Xmx1024m -classpath "+trimmomaticDir+" org.usadellab.trimmomatic.TrimmomaticPE -phred33 "+local_R1+" "+local_R2+" "+R1_trim+" R1_Trimmed_Unpaired.fastq "+R2_trim+" R2_Trimmed_Unpaired.fastq ILLUMINACLIP:"+out_dir+curr_sample+"_adapter.fa:2:30:10 MINLEN:50\n")
 			elif library_type in ["SE", "DGE"]:				
-				outp.write("java -Xmx1024m  org.usadellab.trimmomatic.TrimmomaticSE -phred33 "+local_R1+" "+R1_trim+" ILLUMINACLIP:"+out_dir+curr_sample+"_adapter.fa:2:30:10 MINLEN:50\n")
+				outp.write("java -Xmx1024m -classpath "+trimmomaticDir+" org.usadellab.trimmomatic.TrimmomaticSE -phred33 "+local_R1+" "+R1_trim+" ILLUMINACLIP:"+out_dir+curr_sample+"_adapter.fa:2:30:10 MINLEN:50\n")
 		else:
 			R1_trim = out_dir+curr_sample+"_R1_Trim"+str(standard_trim)+".fastq"
 			R2_trim = out_dir+curr_sample+"_R2_Trim"+str(standard_trim)+".fastq"
 			if library_type in ["PE", "SPE"]:
-				outp.write("java -Xmx1024m  org.usadellab.trimmomatic.TrimmomaticPE -phred33 "+local_R1+" "+local_R2+" "+R1_trim+" R1_Trimmed_Unpaired.fastq "+R2_trim+" R2_Trimmed_Unpaired.fastq HEADCROP:"+standard_trim+" ILLUMINACLIP:"+out_dir+curr_sample+"_adapter.fa:2:30:10 MINLEN:50\n")
+				outp.write("java -Xmx1024m -classpath "+trimmomaticDir+" org.usadellab.trimmomatic.TrimmomaticPE -phred33 "+local_R1+" "+local_R2+" "+R1_trim+" R1_Trimmed_Unpaired.fastq "+R2_trim+" R2_Trimmed_Unpaired.fastq HEADCROP:"+standard_trim+" ILLUMINACLIP:"+out_dir+curr_sample+"_adapter.fa:2:30:10 MINLEN:50\n")
 			elif library_type in ["SE", "DGE"]:
-				outp.write("java -Xmx1024m  org.usadellab.trimmomatic.TrimmomaticSE -phred33 "+local_R1+" "+R1_trim+" HEADCROP:"+standard_trim+"ILLUMINACLIP:"+out_dir+curr_sample+"_adapter.fa:2:30:10 MINLEN:50\n")					
-								
+				outp.write("java -Xmx1024m -classpath "+trimmomaticDir+" org.usadellab.trimmomatic.TrimmomaticSE -phred33 "+local_R1+" "+R1_trim+" HEADCROP:"+standard_trim+"ILLUMINACLIP:"+out_dir+curr_sample+"_adapter.fa:2:30:10 MINLEN:50\n")					
+
+		if system =="capecod":
+			fastqcDir = "/proj/sadevs/sadev01/tools/FastQC/"
+		else:
+			fastqcDir = ""
 		#Run fastqc on trimmed files.  
 		#In some cases fastqc should be run on original files, but we have dropped this as a routine practice because the reports haven't changed much after trimming - adapter contamination has been minimal.
 		if library_type in ["PE", "SPE"]:
-			outp.write("fastqc -o "+out_dir+" "+R1_trim+" "+R2_trim+"\n")
+			outp.write(fastqcDir+"fastqc -o "+out_dir+" "+R1_trim+" "+R2_trim+"\n")
 		elif library_type in ("SE", "DGE"):
-			outp.write("fastqc -o "+out_dir+" "+R1_trim+"\n")
+			outp.write(fastqcDir+"fastqc -o "+out_dir+" "+R1_trim+"\n")
 		
 		#Get total number of reads, unique reads, % unique reads from trimmed file(s). 
 		outp.write("cat "+R1_trim+" | awk '((NR-2)%4==0){read=$1;total++;count[read]++}END{for(read in count){if(count[read]==1){unique++}};print total,unique,unique*100/total}' > "+curr_sample+"_ReadCount\n")
 		if library_type in ["PE", "SPE"]:
 			outp.write("cat "+R2_trim+" | awk '((NR-2)%4==0){read=$1;total++;count[read]++}END{for(read in count){if(count[read]==1){unique++}};print total,unique,unique*100/total}' >> "+curr_sample+"_ReadCount\n")
-		
+
+		if system =="capecod":
+			tophatDir = "/proj/sadevs/sadev01/tools/tophat-2.0.9.Linux_x86_64/"
+		else:
+			tophatDir = ""
 		#Run TopHat with options specific to library type
 		if discovery == "no":
 			if library_type == "PE":
-				outp.write("tophat --library-type fr-unstranded -G "+ERCC_gtf+" --no-novel-juncs --transcriptome-only -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
+				outp.write(tophatDir+"tophat --library-type fr-unstranded -G "+ERCC_gtf+" --no-novel-juncs --transcriptome-only -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
 			elif library_type == "SPE":
-				outp.write("tophat --library-type fr-firststrand -G "+ERCC_gtf+" --no-novel-juncs --transcriptome-only -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
+				outp.write(tophatDir+"tophat --library-type fr-firststrand -G "+ERCC_gtf+" --no-novel-juncs --transcriptome-only -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
 			elif library_type in ["DGE", "SE"]:
-				outp.write("tophat --library-type fr-unstranded -G "+ERCC_gtf+" --no-novel-juncs --transcriptome-only -r 50 -p 12 "+ref_index+" "+R1_trim+"\n")
+				outp.write(tophatDir+"tophat --library-type fr-unstranded -G "+ERCC_gtf+" --no-novel-juncs --transcriptome-only -r 50 -p 12 "+ref_index+" "+R1_trim+"\n")
 		
 		elif discovery == "yes":
 			if library_type == "PE":
-				outp.write("tophat --library-type fr-unstranded -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
+				outp.write(tophatDir+"tophat --library-type fr-unstranded -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
 			elif library_type == "SPE":
-				outp.write("tophat --library-type fr-firststrand -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
+				outp.write(tophatDir+"tophat --library-type fr-firststrand -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
 			elif library_type in ["DGE", "SE"]:
-				outp.write("tophat --library-type fr-unstranded -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+"\n")
-				
+				outp.write(tophatDir+"tophat --library-type fr-unstranded -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+"\n")
+
+		if system=="capecod":
+			samtoolsDir = "/proj/sadevs/sadev01/tools/samtools-0.1.19/"
+		else:
+			samtoolsDir = ""
 		#Get samtools mapping stats
 		outp.write("cd "+out_dir+"/tophat_out/\n")
 		#Create sorted bam file:
-		outp.write("samtools sort accepted_hits.bam "+curr_sample+"_accepted_hits.sorted\n")
+		outp.write(samtoolsDir +"samtools sort accepted_hits.bam "+curr_sample+"_accepted_hits.sorted\n")
 		#Create indexed bam file:
-		outp.write("samtools index "+curr_sample+"_accepted_hits.sorted.bam\n")
+		outp.write(samtoolsDir+"samtools index "+curr_sample+"_accepted_hits.sorted.bam\n")
 		#Write out index stats of where reads align to by chr:
-		outp.write("samtools idxstats "+curr_sample+"_accepted_hits.sorted.bam > "+curr_sample+"_accepted_hits.sorted.stats\n")
+		outp.write(samtoolsDir+"samtools idxstats "+curr_sample+"_accepted_hits.sorted.bam > "+curr_sample+"_accepted_hits.sorted.stats\n")
+
+		if system=="capecod":
+			bamtoolsDir = "/proj/sadevs/sadev01/tools/bamtools/bin/"
+		else:
+			bamtoolsDir = ""
 		#Write out bamtools summary stats:
-		outp.write("bamtools stats -in "+curr_sample+"_accepted_hits.sorted.bam > "+curr_sample+"_accepted_hits.sorted.bamstats\n")
+		outp.write(bamtoolsDir +"bamtools stats -in "+curr_sample+"_accepted_hits.sorted.bam > "+curr_sample+"_accepted_hits.sorted.bamstats\n")
+
+		if system=="capecod":
+			picardDir = "/proj/sadevs/sadev01/tools/picard-tools-1.97/"
+		else:
+			picardDir = "/source/picardtools/picard-tools-1.58/"
 		#Run CollectRnaSeqMetrics
 		if library_type == "SPE":
-			outp.write("java -Xmx2g -jar /source/picardtools/picard-tools-1.58/CollectRnaSeqMetrics.jar REF_FLAT="+ref+" STRAND_SPECIFICITY=SECOND_READ_TRANSCRIPTION_STRAND INPUT="+curr_sample+"_accepted_hits.sorted.bam OUTPUT="+curr_sample+"_RNASeqMetrics\n")	
+			outp.write("java -Xmx2g -jar "+picardDir+"CollectRnaSeqMetrics.jar REF_FLAT="+ref+" STRAND_SPECIFICITY=SECOND_READ_TRANSCRIPTION_STRAND INPUT="+curr_sample+"_accepted_hits.sorted.bam OUTPUT="+curr_sample+"_RNASeqMetrics\n")	
 		else:
-			outp.write("java -Xmx2g -jar /source/picardtools/picard-tools-1.58/CollectRnaSeqMetrics.jar REF_FLAT="+ref+" STRAND_SPECIFICITY=NONE INPUT="+curr_sample+"_accepted_hits.sorted.bam OUTPUT="+curr_sample+"_RNASeqMetrics\n")	
+			outp.write("java -Xmx2g -jar "+picardDir+"CollectRnaSeqMetrics.jar REF_FLAT="+ref+" STRAND_SPECIFICITY=NONE INPUT="+curr_sample+"_accepted_hits.sorted.bam OUTPUT="+curr_sample+"_RNASeqMetrics\n")	
 		
 		#Get number of reads spanning junctions by getting "N"s in CIGAR field of bam file
 		#Be sure that Junction Spanning Reads are Added First then Unmapped Reads for proper ordering of fields in report
-		outp.write("echo \"Junction Spanning Reads: \" $(bamtools filter -in "+curr_sample+"_accepted_hits.sorted.bam -script /data/pcpgm/rnaseq/cigarN.script | bamtools count ) >> "+curr_sample+"_accepted_hits.sorted.bamstats \n")
+		if system=="capecod":
+			cigarDir = "/proj/sadevs/sadev01/taffetapipeline/taffeta/cigarN.script"
+		else:
+			cigarDir = "/data/pcpgm/rnaseq/cigarN.script"
+		outp.write("echo \"Junction Spanning Reads: \" $(bamtools filter -in "+curr_sample+"_accepted_hits.sorted.bam -script "+cigarDir+" | bamtools count ) >> "+curr_sample+"_accepted_hits.sorted.bamstats \n")
 		#Get number of unmapped reads
 		outp.write("echo Unmapped Reads: $(samtools view -c unmapped.bam) >> "+curr_sample+"_accepted_hits.sorted.bamstats \n")		
 
 		#Gather metrics unique to paired-end samples using CollectInsertSizeMetrics
 		if library_type in ["PE", "SPE"]:
-			outp.write("java -Xmx2g -jar /source/picardtools/picard-tools-1.58/CollectInsertSizeMetrics.jar HISTOGRAM_FILE="+curr_sample+"_InsertSizeHist.pdf INPUT="+curr_sample+"_accepted_hits.sorted.bam OUTPUT="+curr_sample+"_InsertSizeMetrics\n")	
+			outp.write("java -Xmx2g -jar "+picardDir+"CollectInsertSizeMetrics.jar HISTOGRAM_FILE="+curr_sample+"_InsertSizeHist.pdf INPUT="+curr_sample+"_accepted_hits.sorted.bam OUTPUT="+curr_sample+"_InsertSizeMetrics\n")	
 		
 		#Run cufflinks to count ERCC spike ins
 		outp.write("mkdir "+out_dir+"/cufflinks_out_ERCC/\n")
 		outp.write("cd "+out_dir+"/cufflinks_out_ERCC/\n")
 		if library_type == "DGE":
-			outp.write("cufflinks --library-type fr-unstranded --no-length-correction -G /data/pcpgm/rnaseq/ERCC/Ambion_Documents/ERCC92.gtf -p 12 ../tophat_out/accepted_hits.bam \n")
+			outp.write("cufflinks --library-type fr-unstranded --no-length-correction -G "+erccpath+" -p 12 ../tophat_out/accepted_hits.bam \n")
 		elif library_type == "SPE":
-			outp.write("cufflinks --library-type fr-firststrand -G /data/pcpgm/rnaseq/ERCC/Ambion_Documents/ERCC92.gtf -p 12 ../tophat_out/accepted_hits.bam \n")
+			outp.write("cufflinks --library-type fr-firststrand -G "+erccpath+" -p 12 ../tophat_out/accepted_hits.bam \n")
 		else:
-			outp.write("cufflinks --library-type fr-unstranded -G /data/pcpgm/rnaseq/ERCC/Ambion_Documents/ERCC92.gtf -p 12 ../tophat_out/accepted_hits.bam \n")
+			outp.write("cufflinks --library-type fr-unstranded -G "+erccpath+" -p 12 ../tophat_out/accepted_hits.bam \n")
 		
 		#Cufflinks to assemble and quantify transcripts
 		outp.write("mkdir "+out_dir+"/cufflinks_out/\n")
 		outp.write("cd "+out_dir+"/cufflinks_out/\n")
 		if library_type == "DGE":
-			outp.write("cufflinks --library-type fr-unstranded --no-length-correction -M /data/pcpgm/rnaseq/ERCC/Ambion_Documents/ERCC92.gtf -p 12 ../tophat_out/accepted_hits.bam \n")
+			outp.write("cufflinks --library-type fr-unstranded --no-length-correction -M "+erccpath+" -p 12 ../tophat_out/accepted_hits.bam \n")
 		elif library_type == "SPE":
-			outp.write("cufflinks --library-type fr-firststrand -M /data/pcpgm/rnaseq/ERCC/Ambion_Documents/ERCC92.gtf -p 12 ../tophat_out/accepted_hits.bam \n")			
+			outp.write("cufflinks --library-type fr-firststrand -M "+erccpath+" -p 12 ../tophat_out/accepted_hits.bam \n")			
 		else:
-			outp.write("cufflinks --library-type fr-unstranded -M /data/pcpgm/rnaseq/ERCC/Ambion_Documents/ERCC92.gtf -p 12 ../tophat_out/accepted_hits.bam \n")
+			outp.write("cufflinks --library-type fr-unstranded -M "+erccpath+" -p 12 ../tophat_out/accepted_hits.bam \n")
 		outp.close()
-	
-		subprocess.call("bsub < "+job_name+".lsf", shell=True)
-		subprocess.call("mv "+job_name+".lsf "+out_dir, shell=True)
+		if system =="capecod":
+			pass
+			#subprocess.call("bsub < "+job_name+".lsf", shell=True)
+			#subprocess.call("mv "+job_name+".lsf "+out_dir, shell=True)
+		elif system =="channingpartners":
+			subprocess.call("bsub < "+job_name+".lsf", shell=True)
+			subprocess.call("mv "+job_name+".lsf "+out_dir, shell=True)
+		elif system =="pcpgmpartners":
+			subprocess.call("bsub < "+job_name+".lsf", shell=True)
+			subprocess.call("mv "+job_name+".lsf "+out_dir, shell=True)
 
 
 if __name__ == "__main__":
