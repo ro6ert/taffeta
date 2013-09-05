@@ -436,7 +436,7 @@ def main(project_name, sample_info_file, path_start):
 	
 	#Create the report
 	if not os.path.exists("rnaseq_align_and_qc_report_Rnw_template.txt"):
-		print "Cannot find rnaseq_align_and_qc_report_Rnw_template.txt"
+		print "Cannot find rnaseq_align_and_qc_report_Rnw_template.txt in "+os.getcwd()
 		sys.exit()
 	rnw_in = open("rnaseq_align_and_qc_report_Rnw_template.txt", "r")
 	rnw_template = rnw_in.read()

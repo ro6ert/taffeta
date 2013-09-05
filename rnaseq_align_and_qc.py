@@ -282,8 +282,10 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 				outp.write("zcat "+R2+".gz > "+local_R2+"\n")
 			else:
 				print "R2 file not found", R2
-		
-		outp.write("cd "+out_dir+"\n")
+		if system =="capecod":
+			pass
+		else:
+			outp.write("cd "+out_dir+"\n")
 		
 		if system =="capecod":
 			trimmomaticDir = "/proj/sadevs/sadev01/tools/Trimmomatic-0.30/trimmomatic.jar"
@@ -354,7 +356,10 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 		else:
 			samtoolsDir = ""
 		#Get samtools mapping stats
-		outp.write("cd "+out_dir+"/tophat_out/\n")
+		if system=="capecod":
+			outp.write("cd "+out_dir+"tophat_out\n")
+		else:
+			outp.write("cd "+out_dir+"/tophat_out/\n")
 		#Create sorted bam file:
 		outp.write(samtoolsDir +"samtools sort accepted_hits.bam "+curr_sample+"_accepted_hits.sorted\n")
 		#Create indexed bam file:
@@ -394,8 +399,13 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 			outp.write("java -Xmx2g -jar "+picardDir+"CollectInsertSizeMetrics.jar HISTOGRAM_FILE="+curr_sample+"_InsertSizeHist.pdf INPUT="+curr_sample+"_accepted_hits.sorted.bam OUTPUT="+curr_sample+"_InsertSizeMetrics\n")	
 		
 		#Run cufflinks to count ERCC spike ins
-		outp.write("mkdir "+out_dir+"/cufflinks_out_ERCC/\n")
-		outp.write("cd "+out_dir+"/cufflinks_out_ERCC/\n")
+		if system=="capecod":
+			outp.write("cd ../../..\n")
+			outp.write("mkdir "+out_dir+"cufflinks_out_ERCC\n")
+			outp.write("cd "+out_dir+"cufflinks_out_ERCC\n")
+		else:
+			outp.write("mkdir "+out_dir+"/cufflinks_out_ERCC/\n")
+			outp.write("cd "+out_dir+"/cufflinks_out_ERCC/\n")
 		if library_type == "DGE":
 			outp.write("cufflinks --library-type fr-unstranded --no-length-correction -G "+erccpath+" -p 12 ../tophat_out/accepted_hits.bam \n")
 		elif library_type == "SPE":
@@ -404,8 +414,14 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 			outp.write("cufflinks --library-type fr-unstranded -G "+erccpath+" -p 12 ../tophat_out/accepted_hits.bam \n")
 		
 		#Cufflinks to assemble and quantify transcripts
-		outp.write("mkdir "+out_dir+"/cufflinks_out/\n")
-		outp.write("cd "+out_dir+"/cufflinks_out/\n")
+		outp.write("pwd\n")
+		if system=="capecod":
+			outp.write("cd ../../..\n")
+			outp.write("mkdir "+out_dir+"cufflinks_out\n")
+			outp.write("cd "+out_dir+"cufflinks_out\n")
+		else:
+			outp.write("mkdir "+out_dir+"/cufflinks_out/\n")
+			outp.write("cd "+out_dir+"/cufflinks_out/\n")
 		if library_type == "DGE":
 			outp.write("cufflinks --library-type fr-unstranded --no-length-correction -M "+erccpath+" -p 12 ../tophat_out/accepted_hits.bam \n")
 		elif library_type == "SPE":
