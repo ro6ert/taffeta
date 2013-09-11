@@ -241,12 +241,12 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 			local_R2 = out_dir+curr_sample+"_R2.fastq"
 		
 		if system =="capecod":
-		        #Make lsf file		
+		        #Make sge file		
 			outp = open(job_name+".sh", "w")
 			outp.write("#!/bin/bash \n")
 			outp.write("#$ -N "+job_name+"\n")
 			outp.write("#$ -cwd\n") 
-			outp.write("#$ -l vritual_free=24G\n")
+			outp.write("#$ -l virtual_free=24G\n")
 			outp.write("#$ -o log.tim.txt\n")
 			outp.write("#$ -e err.tim.txt\n")
 			outp.write("#$ -S /bin/sh\n")

@@ -56,7 +56,7 @@ def main(project_name, sample_info_file, merge_transcriptome, bias_correction, c
 		sys.exit()
 	else:
 		ref_genome = ref_genome_list[0]
-		ref_index, fa, gtf, ref, ERCC_gtf = get_genome_ref_files(ref_genome)
+		ref_index, fa, gtf, ref, ERCC_gtf,erccpath = get_genome_ref_files(ref_genome)
 	#Check whether all samples are of same library type
 	if False in map(lambda y: y==library_type_list[0], library_type_list):
 		print "Make sure all samples in project are of the same library type"
@@ -75,15 +75,26 @@ def main(project_name, sample_info_file, merge_transcriptome, bias_correction, c
 
 	job_name = project_name+"_DE"
 
-	#Make lsf file		
-	outp = open(job_name+".lsf", "w")
-	outp.write("#!/bin/bash \n")
-	outp.write("#BSUB -L /bin/bash\n")
-	outp.write("#BSUB -J "+job_name+"\n")
-	outp.write("#BSUB -q big-multi \n")
-	outp.write("#BSUB -o "+job_name+"_%J.out\n")
-	outp.write("#BSUB -e "+job_name+"_%J.screen\n")
-	outp.write("#BSUB -R 'rusage[mem=24000]'\n")
+	if system =="capecod":
+            outp = open(job_name+".sh", "w")
+            outp.write("#!/bin/bash \n")
+            outp.write("#$ -N "+job_name+"\n")
+	    outp.write("#$ -cwd\n")
+	    outp.write("#$ -l virtual_free=24G\n")
+	    outp.write("#$ -o log.tim.txt\n")
+	    outp.write("#$ -e err.tim.txt\n")
+	    outp.write("#$ -S /bin/sh\n")
+	    outp.write("#$ -q linux01.q\n")
+	else:
+                #Make lsf file		
+		outp = open(job_name+".lsf", "w")
+		outp.write("#!/bin/bash \n")
+		outp.write("#BSUB -L /bin/bash\n")
+		outp.write("#BSUB -J "+job_name+"\n")
+		outp.write("#BSUB -q big-multi \n")
+		outp.write("#BSUB -o "+job_name+"_%J.out\n")
+		outp.write("#BSUB -e "+job_name+"_%J.screen\n")
+		outp.write("#BSUB -R 'rusage[mem=24000]'\n")
 
 	if merge_transcriptome == "yes":
 		#Create merged transcriptome with cuffmerge
@@ -109,9 +120,11 @@ def main(project_name, sample_info_file, merge_transcriptome, bias_correction, c
 		sys.exit()
 	outp.write("-L "+",".join(conditions)+" -u "+cuffdiff_gtf+" "+" ".join(map(lambda(x): get_bam_files_for_group(x, runs, path_start), conditions))+"\n")
 	outp.close()
-	
-	subprocess.call("bsub < "+job_name+".lsf", shell=True)
-	subprocess.call("mv "+job_name+".lsf "+out_dir, shell=True)
+	if system=="capecod":
+		pass
+	else:
+		subprocess.call("bsub < "+job_name+".lsf", shell=True)
+		subprocess.call("mv "+job_name+".lsf "+out_dir, shell=True)
 
 
 if __name__ == "__main__":

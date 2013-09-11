@@ -56,7 +56,7 @@ def main(project_name, sample_info_file, path_start):
 		sys.exit()
 	else:
 		ref_genome = ref_genome_list[0]
-		ref_index, fa, gtf, ref, ERCC_gtf = get_genome_ref_files(ref_genome)
+		ref_index, fa, gtf, ref, ERCC_gtf, erccpath = get_genome_ref_files(ref_genome)
 
 	#Create the report
 	if not os.path.exists("rnaseq_de_report_Rnw_template.txt"):
