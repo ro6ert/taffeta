@@ -27,7 +27,9 @@ def get_sample_info(fin):
 	if '' in c:
 		c.remove('')
 	d = []
+
 	for x in c:
+		print x.split("\t")
 		customer_id = x.split('\t')[0]
 		gigpad_id = x.split('\t')[1]
 		lane = x.split('\t')[2]
@@ -225,8 +227,8 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 				
 		#This directory structure and naming convention is (obviously!) unique to PCPGM
 		if system == "capecod":
-			R1 = top_dir+"S-001140205_1_sequenceTEST.fastq"
-			R2 = top_dir+"S-001140205_2_sequenceTEST.fastq"
+			R1 = top_dir+curr_sample+"_R1.fastq"
+			R2 = top_dir+curr_sample+"_R2.fastq"
 			local_R1 = out_dir+curr_sample+"_R1.fastq"
 			local_R2 = out_dir+curr_sample+"_R2.fastq"
 		elif system == "channingpartners":
@@ -247,11 +249,14 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 			outp.write("#$ -N "+job_name+"\n")
 			outp.write("#$ -cwd\n") 
 			outp.write("#$ -l virtual_free=24G\n")
-			outp.write("#$ -o log.tim.txt\n")
-			outp.write("#$ -e err.tim.txt\n")
-			outp.write("#$ -S /bin/sh\n")
+			outp.write("#$ -o log."+job_name+".txt\n")
+			outp.write("#$ -e err."+job_name+".txt\n")
+			outp.write("#$ -S /bin/bash\n")
 			outp.write("#$ -q linux01.q\n")
-	       	elif system=="channingpartners":
+			#outp.write("bash")
+			outp.write(". /proj/sadevs/sadev01/settings/pipeline_env.sh\n")
+			outp.write(". /proj/sadevs/sadev01/python/2.7.3/bin/activate\n")
+		elif system=="channingpartners":
 		        #Make lsf file		
 			outp = open(job_name+".lsf", "w")
 			outp.write("#!/bin/bash \n")
@@ -329,32 +334,37 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 			outp.write(fastqcDir+"fastqc -o "+out_dir+" "+R1_trim+" "+R2_trim+"\n")
 		elif library_type in ("SE", "DGE"):
 			outp.write(fastqcDir+"fastqc -o "+out_dir+" "+R1_trim+"\n")
-		
+		if system =="capecod":
+			readcount_out_dir = out_dir
+		else:
+			readcount_out_dir = ""
 		#Get total number of reads, unique reads, % unique reads from trimmed file(s). 
-		outp.write("cat "+R1_trim+" | awk '((NR-2)%4==0){read=$1;total++;count[read]++}END{for(read in count){if(count[read]==1){unique++}};print total,unique,unique*100/total}' > "+curr_sample+"_ReadCount\n")
+		outp.write("cat "+R1_trim+" | awk '((NR-2)%4==0){read=$1;total++;count[read]++}END{for(read in count){if(count[read]==1){unique++}};print total,unique,unique*100/total}' > "+readcount_out_dir+curr_sample+"_ReadCount\n")
 		if library_type in ["PE", "SPE"]:
-			outp.write("cat "+R2_trim+" | awk '((NR-2)%4==0){read=$1;total++;count[read]++}END{for(read in count){if(count[read]==1){unique++}};print total,unique,unique*100/total}' >> "+curr_sample+"_ReadCount\n")
+			outp.write("cat "+R2_trim+" | awk '((NR-2)%4==0){read=$1;total++;count[read]++}END{for(read in count){if(count[read]==1){unique++}};print total,unique,unique*100/total}' >> "+readcount_out_dir+curr_sample+"_ReadCount\n")
 
 		if system =="capecod":
 			tophatDir = "/proj/sadevs/sadev01/tools/tophat-2.0.9.Linux_x86_64/"
+			tophatOut = out_dir+"tophat_out"
 		else:
 			tophatDir = ""
+			tophatOut = "./tophat_out"
 		#Run TopHat with options specific to library type
 		if discovery == "no":
 			if library_type == "PE":
-				outp.write(tophatDir+"tophat --library-type fr-unstranded -G "+ERCC_gtf+" --no-novel-juncs --transcriptome-only -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
+				outp.write(tophatDir+"tophat --output-dir "+tophatOut+" --library-type fr-unstranded -G "+ERCC_gtf+" --no-novel-juncs --transcriptome-only -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
 			elif library_type == "SPE":
-				outp.write(tophatDir+"tophat --library-type fr-firststrand -G "+ERCC_gtf+" --no-novel-juncs --transcriptome-only -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
+				outp.write(tophatDir+"tophat  --output-dir "+tophatOut+" --library-type fr-firststrand -G "+ERCC_gtf+" --no-novel-juncs --transcriptome-only -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
 			elif library_type in ["DGE", "SE"]:
-				outp.write(tophatDir+"tophat --library-type fr-unstranded -G "+ERCC_gtf+" --no-novel-juncs --transcriptome-only -r 50 -p 12 "+ref_index+" "+R1_trim+"\n")
+				outp.write(tophatDir+"tophat --output-dir "+tophatOut+" --library-type fr-unstranded -G "+ERCC_gtf+" --no-novel-juncs --transcriptome-only -r 50 -p 12 "+ref_index+" "+R1_trim+"\n")
 		
 		elif discovery == "yes":
 			if library_type == "PE":
-				outp.write(tophatDir+"tophat --library-type fr-unstranded -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
+				outp.write(tophatDir+"tophat --output-dir "+tophatOut+" --library-type fr-unstranded -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
 			elif library_type == "SPE":
-				outp.write(tophatDir+"tophat --library-type fr-firststrand -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
+				outp.write(tophatDir+"tophat --output-dir "+tophatOut+" --library-type fr-firststrand -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+" "+R2_trim+"\n")
 			elif library_type in ["DGE", "SE"]:
-				outp.write(tophatDir+"tophat --library-type fr-unstranded -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+"\n")
+				outp.write(tophatDir+"tophat --output-dir "+tophatOut+" --library-type fr-unstranded -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+"\n")
 
 		if system=="capecod":
 			samtoolsDir = "/proj/sadevs/sadev01/tools/samtools-0.1.19/"
@@ -436,8 +446,8 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 		outp.close()
 		if system =="capecod":
 			pass
-			#subprocess.call("bsub < "+job_name+".lsf", shell=True)
-			#subprocess.call("mv "+job_name+".lsf "+out_dir, shell=True)
+			#subprocess.call("qsub "+job_name+".sh", shell=True)
+			#subprocess.call("mv "+job_name+".sh "+out_dir, shell=True)
 		elif system =="channingpartners":
 			subprocess.call("bsub < "+job_name+".lsf", shell=True)
 			subprocess.call("mv "+job_name+".lsf "+out_dir, shell=True)
