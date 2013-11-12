@@ -75,14 +75,14 @@ def main(project_name, sample_info_file, merge_transcriptome, bias_correction, c
 
 	job_name = project_name+"_DE"
 
-	if system =="capecod":
+	if system =="capecod" or system == "channingcloud":
             outp = open(job_name+".sh", "w")
             outp.write("#!/bin/bash \n")
             outp.write("#$ -N "+job_name+"\n")
 	    outp.write("#$ -cwd\n")
 	    outp.write("#$ -l virtual_free=24G\n")
-	    outp.write("#$ -o log.tim.txt\n")
-	    outp.write("#$ -e err.tim.txt\n")
+	    outp.write("#$ -o log."+job_name+"de.txt\n")
+	    outp.write("#$ -e err."+job_name+"de.txt\n")
 	    outp.write("#$ -S /bin/sh\n")
 	    outp.write("#$ -q linux01.q\n")
 	else:
@@ -120,7 +120,7 @@ def main(project_name, sample_info_file, merge_transcriptome, bias_correction, c
 		sys.exit()
 	outp.write("-L "+",".join(conditions)+" -u "+cuffdiff_gtf+" "+" ".join(map(lambda(x): get_bam_files_for_group(x, runs, path_start), conditions))+"\n")
 	outp.close()
-	if system=="capecod":
+	if system=="capecod" or system == "channingcloud":
 		pass
 	else:
 		subprocess.call("bsub < "+job_name+".lsf", shell=True)

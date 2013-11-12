@@ -3,7 +3,8 @@ import subprocess
 import os
 import argparse
 
-system = "capecod"
+#system = "capecod"
+system = "channingcloud"
 #system = "channingpartners"
 #system = "pcpgmpartners"
 
@@ -55,7 +56,13 @@ def get_genome_ref_files(genome):
 	"""
 
 	if genome == "hg19":
-		if system == "capecod":
+		if system == "channingcloud":
+			ref_index = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC"
+			fa = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
+			gtf = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
+			ref = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/refFlat.txt"
+			ERCC_gtf = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC_tuxedo.gtf"
+		elif system == "capecod":
 			ref_index = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC"
 			fa = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
 			gtf = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
@@ -226,7 +233,12 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 		job_name = curr_sample
 				
 		#This directory structure and naming convention is (obviously!) unique to PCPGM
-		if system == "capecod":
+		if system == "channingcloud":
+			R1 = top_dir+curr_sample+"_R1.fastq"
+			R2 = top_dir+curr_sample+"_R2.fastq"
+			local_R1 = out_dir+curr_sample+"_R1.fastq"
+			local_R2 = out_dir+curr_sample+"_R2.fastq"
+		elif system == "capecod":
 			R1 = top_dir+curr_sample+"_R1.fastq"
 			R2 = top_dir+curr_sample+"_R2.fastq"
 			local_R1 = out_dir+curr_sample+"_R1.fastq"
@@ -241,8 +253,22 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 			R2 = top_dir+"Unaligned-"+lane+"/Project_pcpgm/Sample_"+gigpad+"/filtered/"+gigpad+"_"+index+"_L00"+lane+"_R2.fastq"
 			local_R1 = out_dir+curr_sample+"_R1.fastq"
 			local_R2 = out_dir+curr_sample+"_R2.fastq"
-		
-		if system =="capecod":
+
+		if system == "channingcloud":
+		        #Make sge file		
+			outp = open(job_name+".sh", "w")
+			outp.write("#!/bin/bash \n")
+			outp.write("#$ -N "+job_name+"\n")
+			outp.write("#$ -cwd\n") 
+			outp.write("#$ -l virtual_free=24G\n")
+			outp.write("#$ -o log."+job_name+".txt\n")
+			outp.write("#$ -e err."+job_name+".txt\n")
+			outp.write("#$ -S /bin/bash\n")
+			outp.write("#$ -q linux01.q\n")
+			#outp.write("bash")
+			outp.write(". /rnaseqapps/pipeline_env.sh\n")
+			outp.write(". /rnaseqapps/rnaseq_env/bin/activate\n")
+		elif system =="capecod":
 		        #Make sge file		
 			outp = open(job_name+".sh", "w")
 			outp.write("#!/bin/bash \n")
@@ -297,7 +323,9 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 		else:
 			outp.write("cd "+out_dir+"\n")
 		
-		if system =="capecod":
+		if system == "channingcloud":
+			trimmomaticDir = ""
+                elif system =="capecod":
 			trimmomaticDir = "/proj/sadevs/sadev01/tools/Trimmomatic-0.30/trimmomatic.jar"
 		else:
 			trimmomaticDir = ""
@@ -324,7 +352,9 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 			elif library_type in ["SE", "DGE"]:
 				outp.write("java -Xmx1024m -classpath "+trimmomaticDir+" org.usadellab.trimmomatic.TrimmomaticSE -phred33 "+local_R1+" "+R1_trim+" HEADCROP:"+standard_trim+"ILLUMINACLIP:"+out_dir+curr_sample+"_adapter.fa:2:30:10 MINLEN:50\n")					
 
-		if system =="capecod":
+		if system == "channingcloud":
+			fastqcDir = ""
+		elif system =="capecod":
 			fastqcDir = "/proj/sadevs/sadev01/tools/FastQC/"
 		else:
 			fastqcDir = ""
@@ -343,7 +373,10 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 		if library_type in ["PE", "SPE"]:
 			outp.write("cat "+R2_trim+" | awk '((NR-2)%4==0){read=$1;total++;count[read]++}END{for(read in count){if(count[read]==1){unique++}};print total,unique,unique*100/total}' >> "+readcount_out_dir+curr_sample+"_ReadCount\n")
 
-		if system =="capecod":
+		if system == "channingcloud":
+			tophatDir = ""
+			tophatOut = out_dir+"tophat_out"
+		elif system =="capecod":
 			tophatDir = "/proj/sadevs/sadev01/tools/tophat-2.0.9.Linux_x86_64/"
 			tophatOut = out_dir+"tophat_out"
 		else:
@@ -366,12 +399,16 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 			elif library_type in ["DGE", "SE"]:
 				outp.write(tophatDir+"tophat --output-dir "+tophatOut+" --library-type fr-unstranded -G "+ERCC_gtf+" -r 50 -p 12 "+ref_index+" "+R1_trim+"\n")
 
-		if system=="capecod":
+		if system == "channingcloud":
+			samtoolsDir = ""
+		elif system=="capecod":
 			samtoolsDir = "/proj/sadevs/sadev01/tools/samtools-0.1.19/"
 		else:
 			samtoolsDir = ""
 		#Get samtools mapping stats
-		if system=="capecod":
+		if system == "channingcloud":
+			outp.write("cd "+out_dir+"tophat_out\n")
+		elif system=="capecod":
 			outp.write("cd "+out_dir+"tophat_out\n")
 		else:
 			outp.write("cd "+out_dir+"/tophat_out/\n")
@@ -382,14 +419,18 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 		#Write out index stats of where reads align to by chr:
 		outp.write(samtoolsDir+"samtools idxstats "+curr_sample+"_accepted_hits.sorted.bam > "+curr_sample+"_accepted_hits.sorted.stats\n")
 
-		if system=="capecod":
+		if system == "channingcloud":
+			bamtoolsDir = ""
+		elif system=="capecod":
 			bamtoolsDir = "/proj/sadevs/sadev01/tools/bamtools/bin/"
 		else:
 			bamtoolsDir = ""
 		#Write out bamtools summary stats:
 		outp.write(bamtoolsDir +"bamtools stats -in "+curr_sample+"_accepted_hits.sorted.bam > "+curr_sample+"_accepted_hits.sorted.bamstats\n")
 
-		if system=="capecod":
+		if system == "channingcloud":
+			picardDir = "/rnaseqapps/bin/"
+		elif system == "capecod"
 			picardDir = "/proj/sadevs/sadev01/tools/picard-tools-1.97/"
 		else:
 			picardDir = "/source/picardtools/picard-tools-1.58/"
@@ -401,7 +442,9 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 		
 		#Get number of reads spanning junctions by getting "N"s in CIGAR field of bam file
 		#Be sure that Junction Spanning Reads are Added First then Unmapped Reads for proper ordering of fields in report
-		if system=="capecod":
+		if system == "channingcloud":
+			cigarDir = "/rnaseqapps/taffeta/cigarN.script"
+		elif system=="capecod":
 			cigarDir = "/proj/sadevs/sadev01/taffetapipeline/taffeta/cigarN.script"
 		else:
 			cigarDir = "/data/pcpgm/rnaseq/cigarN.script"
@@ -414,7 +457,7 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 			outp.write("java -Xmx2g -jar "+picardDir+"CollectInsertSizeMetrics.jar HISTOGRAM_FILE="+curr_sample+"_InsertSizeHist.pdf INPUT="+curr_sample+"_accepted_hits.sorted.bam OUTPUT="+curr_sample+"_InsertSizeMetrics\n")	
 		
 		#Run cufflinks to count ERCC spike ins
-		if system=="capecod":
+		if system=="capecod" or system == "channingcloud":
 			outp.write("cd ../../..\n")
 			outp.write("mkdir "+out_dir+"cufflinks_out_ERCC\n")
 			outp.write("cd "+out_dir+"cufflinks_out_ERCC\n")
@@ -430,7 +473,7 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 		
 		#Cufflinks to assemble and quantify transcripts
 		outp.write("pwd\n")
-		if system=="capecod":
+		if system=="capecod" or system == "channingcloud":
 			outp.write("cd ../../..\n")
 			outp.write("mkdir "+out_dir+"cufflinks_out\n")
 			outp.write("cd "+out_dir+"cufflinks_out\n")
@@ -444,7 +487,7 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 		else:
 			outp.write("cufflinks --library-type fr-unstranded -M "+erccpath+" -p 12 ../tophat_out/accepted_hits.bam \n")
 		outp.close()
-		if system =="capecod":
+		if system =="capecod" or system == "channingcloud":
 			pass
 			#subprocess.call("qsub "+job_name+".sh", shell=True)
 			#subprocess.call("mv "+job_name+".sh "+out_dir, shell=True)
