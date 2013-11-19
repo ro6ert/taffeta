@@ -57,11 +57,11 @@ def get_genome_ref_files(genome):
 
 	if genome == "hg19":
 		if system == "channingcloud":
-			ref_index = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC"
-			fa = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
-			gtf = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
-			ref = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/refFlat.txt"
-			ERCC_gtf = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC_tuxedo.gtf"
+			ref_index = "/proj/regeps/regep00/studies/symbicort/analyses/rerpc/cloudVolume/hg19ercc/hg19_ERCC"
+			fa = "/proj/regeps/regep00/studies/symbicort/analyses/rerpc/cloudVolume/WholeGenomeFasta/genome.fa"
+			gtf = "/proj/regeps/regep00/studies/symbicort/analyses/rerpc/cloudVolume/Genes/genes.gtf"
+			ref = "/proj/regeps/regep00/studies/symbicort/analyses/rerpc/cloudVolume/Genes/refFlat.txt"
+			ERCC_gtf = "/proj/regeps/regep00/studies/symbicort/analyses/rerpc/cloudVolume/hg19ercc/hg19_ERCC_tuxedo.gtf"
 		elif system == "capecod":
 			ref_index = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC"
 			fa = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
