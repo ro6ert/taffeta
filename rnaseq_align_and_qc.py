@@ -80,6 +80,8 @@ def get_genome_ref_files(genome):
 			gtf = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf"
 			ref = "/proj/sadevs/sadev01/tool-data/genome_references/UCSC/Homo_sapiens/UCSC/hg19/Annotation/Genes/refFlat.txt"
 			ERCC_gtf = "/proj/sadevs/sadev01/tool-data/hg19ercc/hg19_ERCC_tuxedo.gtf"
+		if system=="channingcloud":
+			erccpath = "/proj/regeps/regep00/studies/symbicort/analyses/rerpc/cloudVolume/ercc/ERCC92.gtf"
 		if system=="capecod":
 			erccpath = "/proj/sadevs/sadev01/tool-data/Ambion_Documents/ercc/ERCC92.gtf"
 	       	elif system=="channingpartners":
