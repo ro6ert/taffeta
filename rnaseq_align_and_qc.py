@@ -430,7 +430,7 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 
 		if system == "channingcloud":
 			picardDir = "/rnaseqapps/bin/"
-		elif system == "capecod"
+		elif system == "capecod":
 			picardDir = "/proj/sadevs/sadev01/tools/picard-tools-1.97/"
 		else:
 			picardDir = "/source/picardtools/picard-tools-1.58/"
