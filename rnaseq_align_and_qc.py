@@ -266,7 +266,7 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 			outp.write("#$ -o log."+job_name+".txt\n")
 			outp.write("#$ -e err."+job_name+".txt\n")
 			outp.write("#$ -S /bin/bash\n")
-			outp.write("#$ -q linux01.q\n")
+			#outp.write("#$ -q linux01.q\n")
 			#outp.write("bash")
 			outp.write(". /rnaseqapps/pipeline_env.sh\n")
 			outp.write(". /rnaseqapps/rnaseq_env/bin/activate\n")

@@ -84,7 +84,7 @@ def main(project_name, sample_info_file, merge_transcriptome, bias_correction, c
 	    outp.write("#$ -o log."+job_name+"de.txt\n")
 	    outp.write("#$ -e err."+job_name+"de.txt\n")
 	    outp.write("#$ -S /bin/sh\n")
-	    outp.write("#$ -q linux01.q\n")
+	    #outp.write("#$ -q linux01.q\n")
 	else:
                 #Make lsf file		
 		outp = open(job_name+".lsf", "w")
