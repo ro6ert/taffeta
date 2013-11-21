@@ -262,7 +262,7 @@ def main(sample_info_file, discovery, standard_trim, path_start):
 			outp.write("#!/bin/bash \n")
 			outp.write("#$ -N "+job_name+"\n")
 			outp.write("#$ -cwd\n") 
-			outp.write("#$ -l virtual_free=24G\n")
+			#outp.write("#$ -l virtual_free=24G\n")
 			outp.write("#$ -o log."+job_name+".txt\n")
 			outp.write("#$ -e err."+job_name+".txt\n")
 			outp.write("#$ -S /bin/bash\n")

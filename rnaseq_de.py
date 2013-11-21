@@ -75,12 +75,22 @@ def main(project_name, sample_info_file, merge_transcriptome, bias_correction, c
 
 	job_name = project_name+"_DE"
 
-	if system =="capecod" or system == "channingcloud":
+	if system =="capecod":
             outp = open(job_name+".sh", "w")
             outp.write("#!/bin/bash \n")
             outp.write("#$ -N "+job_name+"\n")
 	    outp.write("#$ -cwd\n")
 	    outp.write("#$ -l virtual_free=24G\n")
+	    outp.write("#$ -o log."+job_name+"de.txt\n")
+	    outp.write("#$ -e err."+job_name+"de.txt\n")
+	    outp.write("#$ -S /bin/sh\n")
+	    #outp.write("#$ -q linux01.q\n")
+	elif system == "channingcloud":
+            outp = open(job_name+".sh", "w")
+            outp.write("#!/bin/bash \n")
+            outp.write("#$ -N "+job_name+"\n")
+	    outp.write("#$ -cwd\n")
+	    #outp.write("#$ -l virtual_free=24G\n")
 	    outp.write("#$ -o log."+job_name+"de.txt\n")
 	    outp.write("#$ -e err."+job_name+"de.txt\n")
 	    outp.write("#$ -S /bin/sh\n")
